@@ -67,3 +67,20 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsI
 ### Delete a category (replace 1 with the real id)
 DELETE http://127.0.0.1:5000/api/categories/1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+### List transactions
+GET http://127.0.0.1:5000/api/transactions
+Authorization: Bearer TOKEN_HERE
+
+### Create an expense (replace category_id with a real expense category id you created)
+POST http://127.0.0.1:5000/api/transactions
+Content-Type: application/json
+Authorization: Bearer TOKEN_HERE
+
+{
+  "category_id": 2,
+  "amount": 45.50,
+  "type": "expense",
+  "date": "2026-08-01",
+  "note": "Weekly groceries"
+}

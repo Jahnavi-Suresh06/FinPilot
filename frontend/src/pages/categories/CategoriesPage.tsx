@@ -50,15 +50,26 @@ export default function CategoriesPage() {
         setIsModalOpen(true);
     }
 
+    const [formError, setFormError] = useState<string | null>(null);
+
     async function handleFormSubmit(data: CategoryFormValues) {
-        if (editingCategory) {
-            const updated = await updateCategory(editingCategory.id, data);
-            setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-        } else {
-            const created = await createCategory(data);
-            setCategories((prev) => [...prev, created]);
+        setFormError(null);
+        try {
+            if (editingCategory) {
+                const updated = await updateCategory(editingCategory.id, data);
+                setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+            } else {
+                const created = await createCategory(data);
+                setCategories((prev) => [...prev, created]);
+            }
+            setIsModalOpen(false);
+        } catch (err) {
+            const axiosError = err as import("axios").AxiosError<{ errors?: Record<string, string[]> }>;
+            const backendErrors = axiosError.response?.data?.errors;
+            setFormError(
+                backendErrors?.name?.[0] ?? backendErrors?.general?.[0] ?? "Something went wrong. Please try again.",
+            );
         }
-        setIsModalOpen(false);
     }
 
     async function handleDelete(category: Category) {
@@ -155,9 +166,17 @@ export default function CategoriesPage() {
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setFormError(null);
+                }}
                 title={editingCategory ? "Edit category" : "Add category"}
             >
+                {formError && (
+                    <div className="mb-4 rounded-lg bg-danger-50 px-3.5 py-2.5 text-sm font-medium text-danger-600">
+                        {formError}
+                    </div>
+                )}
                 <CategoryForm
                     initialValues={editingCategory ?? undefined}
                     onSubmit={handleFormSubmit}
