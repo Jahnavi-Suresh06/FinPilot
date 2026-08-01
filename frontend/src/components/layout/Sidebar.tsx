@@ -8,6 +8,7 @@ import {
     Sparkles,
     Settings,
     Wallet,
+    Tag,
 } from "lucide-react";
 
 // Each entry describes one item in the sidebar navigation.
@@ -17,6 +18,7 @@ const navItems = [
     { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
     { label: "Income", to: "/income", icon: ArrowUpCircle },
     { label: "Expenses", to: "/expenses", icon: ArrowDownCircle },
+    { label: "Categories", to: "/categories", icon: Tag },
     { label: "Budgets", to: "/budgets", icon: PiggyBank },
     { label: "Analytics", to: "/analytics", icon: BarChart3 },
     { label: "AI Advisor", to: "/ai-advisor", icon: Sparkles },

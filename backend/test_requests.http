@@ -16,10 +16,54 @@ POST http://127.0.0.1:5000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "testuser@example.com",
+  "email": "john.doe@example.com",
   "password": "SecurePass123"
 }
 
-### Get current user (replace TOKEN_HERE with the access_token from login response)
+### Get current user
 GET http://127.0.0.1:5000/api/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU3MzYyMCwianRpIjoiMTcwODg4NmEtNzQxNC00Njk1LThhNTItZTQ3ZWU0Y2ZkZTUyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3ODU1NzM2MjAsImNzcmYiOiI3NDQ4NTFmYS03ZGJjLTRjZTEtYWVlMC0wMWM2YjM5NDFiZjAiLCJleHAiOjE3ODU2NjAwMjB9.7c2ghIfhg6M9UHfWT6SokHxqAMRLjpicdu2TnK0MTbk
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+### List categories
+GET http://127.0.0.1:5000/api/categories
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+### Create an expense category
+POST http://127.0.0.1:5000/api/categories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+{
+  "name": "Groceries",
+  "type": "expense",
+  "icon": "shopping-cart",
+  "color": "#10B981"
+}
+
+### Create an income category
+POST http://127.0.0.1:5000/api/categories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+{
+  "name": "Salary",
+  "type": "income",
+  "icon": "briefcase",
+  "color": "#6366F1"
+}
+
+### Update a category (replace 1 with the real id from create response)
+PUT http://127.0.0.1:5000/api/categories/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA
+
+{
+  "name": "Groceries & Household",
+  "type": "expense",
+  "icon": "shopping-cart",
+  "color": "#10B981"
+}
+
+### Delete a category (replace 1 with the real id)
+DELETE http://127.0.0.1:5000/api/categories/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU4MTQwNywianRpIjoiYmEwMzE4YTQtYzIwYi00OTNkLWFhZjEtOWIwMjI0MDdkN2YyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU1ODE0MDcsImNzcmYiOiJkZjNlM2E0My1lYTNjLTQzODgtYTY0NS02YzJiMDY1YjVkNWQiLCJleHAiOjE3ODU2Njc4MDd9.Cn5tXpFOEl0aQaQUO1x5rU3v79DWuLQ7OTOKRYtOqWA

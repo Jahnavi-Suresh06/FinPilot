@@ -31,7 +31,9 @@ def create_app(config_name="development"):
     # Register blueprints: this is how Flask "plugs in" a group of routes
     # defined in a separate file into the main application.
     from app.routes.auth_routes import auth_bp
+    from app.routes.category_routes import category_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(category_bp)
 
     @app.route("/api/health", methods=["GET"])
     def health_check():
