@@ -84,3 +84,7 @@ Authorization: Bearer TOKEN_HERE
   "date": "2026-08-01",
   "note": "Weekly groceries"
 }
+
+### Dashboard summary
+GET http://127.0.0.1:5000/api/analytics/summary
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTYxMTU5NiwianRpIjoiMWQ0NGY5MTUtYzMzMC00MjliLWFmN2ItYTE0NWE2ODdlODY0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU2MTE1OTYsImNzcmYiOiIwNmM0NDZjMi02ODVmLTQyOTItOGE4Yy0wN2RkMjc2NzZjMDIiLCJleHAiOjE3ODU2OTc5OTZ9.I9gBj1lG-Vck-9ei0Yc7qkl2e1eFdvAnnhtvLrGlcL4
