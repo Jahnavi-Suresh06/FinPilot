@@ -1,24 +1,26 @@
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
+import ProtectedRoute from "../components/layout/ProtectedRoute";
 import DashboardPage from "../pages/dashboard/DashboardPage";
 import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
 
-/**
- * The single source of truth for every URL in FinPilot.
- * createBrowserRouter (rather than the older <BrowserRouter> component
- * approach) is the current React Router recommended pattern — it enables
- * newer features we'll use later, like data loaders.
- */
 const router = createBrowserRouter([
     {
         path: "/login",
         element: <LoginPage />,
     },
     {
-        // AppLayout wraps all these child routes with Sidebar + Navbar.
-        // Whichever child path matches renders inside AppLayout's <Outlet />.
+        path: "/register",
+        element: <RegisterPage />,
+    },
+    {
         path: "/",
-        element: <AppLayout />,
+        element: (
+            <ProtectedRoute>
+                <AppLayout />
+            </ProtectedRoute>
+        ),
         children: [
             {
                 path: "dashboard",
