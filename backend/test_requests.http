@@ -1,0 +1,25 @@
+### Health check
+GET http://127.0.0.1:5000/api/health
+
+### Register a new user
+POST http://127.0.0.1:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "SecurePass123",
+  "full_name": "Test User"
+}
+
+### Login
+POST http://127.0.0.1:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "SecurePass123"
+}
+
+### Get current user (replace TOKEN_HERE with the access_token from login response)
+GET http://127.0.0.1:5000/api/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTU3MzYyMCwianRpIjoiMTcwODg4NmEtNzQxNC00Njk1LThhNTItZTQ3ZWU0Y2ZkZTUyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3ODU1NzM2MjAsImNzcmYiOiI3NDQ4NTFmYS03ZGJjLTRjZTEtYWVlMC0wMWM2YjM5NDFiZjAiLCJleHAiOjE3ODU2NjAwMjB9.7c2ghIfhg6M9UHfWT6SokHxqAMRLjpicdu2TnK0MTbk
