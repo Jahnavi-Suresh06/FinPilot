@@ -59,11 +59,12 @@ class BudgetCreateSchema(ma.Schema):
             min=1, max=12, error="Month must be between 1 and 12."),
     )
 
-    year = fields.Integer(
-        required=True,
-        validate=validate.Range(
-            min=2000, max=2100, error="Please enter a valid year."),
-    )
+
+year = fields.Integer(
+    required=True,
+    validate=validate.Range(
+        min=2000, max=2100, error="Year must be between 2000 and 2100."),
+)
 
 
 budget_schema = BudgetSchema()

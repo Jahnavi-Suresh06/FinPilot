@@ -7,7 +7,7 @@ export const transactionSchema = z.object({
         .positive("Amount must be greater than 0."),
     type: z.enum(["income", "expense"]),
     date: z.string().min(1, "Date is required."),
-    note: z.string().max(255, "Note is too long.").optional(),
+    note: z.string().max(255, "Note must be under 255 characters.").optional(),
 });
 
 export type TransactionFormValues = z.infer<typeof transactionSchema>;

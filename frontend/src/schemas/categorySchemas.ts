@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const categorySchema = z.object({
-    name: z.string().min(1, "Category name is required.").max(100, "Name is too long."),
+    name: z
+        .string()
+        .min(1, "Category name is required.")
+        .max(100, "Category name must be under 100 characters."),
     type: z.enum(["income", "expense"], {
         message: "Please select a category type.",
     }),
