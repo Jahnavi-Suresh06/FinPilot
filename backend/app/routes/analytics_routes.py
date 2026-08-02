@@ -1,14 +1,18 @@
 from datetime import date
 from calendar import month_abbr
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import func
 
 from app.extensions import db
 from app.models.transaction import Transaction
 from app.models.category import Category
-from app.schemas.analytics_schema import dashboard_summary_schema
+from app.schemas.analytics_schema import (
+    dashboard_summary_schema,
+    comparison_schema,
+    analytics_trends_schema,
+)
 from app.schemas.transaction_schema import transactions_schema
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/api/analytics")
@@ -27,7 +31,6 @@ def _get_totals(user_id):
         .all()
     )
 
-    # results looks like: [("income", Decimal("5000.00")), ("expense", Decimal("1200.00"))]
     totals = {"income": 0, "expense": 0}
     for tx_type, total in results:
         totals[tx_type] = total or 0
@@ -39,8 +42,6 @@ def _get_category_breakdown(user_id):
     """
     Sums expense amounts, grouped by category, joined against the
     Category table to get each category's name/color for the pie chart.
-    Only expenses are included — a pie chart mixing income and expense
-    categories together wouldn't be meaningful.
     """
     results = (
         db.session.query(
@@ -71,9 +72,6 @@ def _get_monthly_trend(user_id, months=6):
     """
     today = date.today()
 
-    # Build a list of the last `months` (year, month) pairs, oldest first,
-    # e.g. for August 2026 with months=6:
-    # [(2026,3), (2026,4), (2026,5), (2026,6), (2026,7), (2026,8)]
     month_list = []
     year, month = today.year, today.month
     for _ in range(months):
@@ -84,8 +82,6 @@ def _get_monthly_trend(user_id, months=6):
             year -= 1
     month_list.reverse()
 
-    # One query, grouping by both year and month at once, for the entire
-    # window — far more efficient than running 6 separate queries (one per month).
     results = (
         db.session.query(
             func.strftime("%Y", Transaction.date).label("year"),
@@ -98,7 +94,6 @@ def _get_monthly_trend(user_id, months=6):
         .all()
     )
 
-    # Convert query results into a fast lookup: {"2026-08": {"income": ..., "expense": ...}}
     lookup = {}
     for year_str, month_str, tx_type, total in results:
         key = f"{year_str}-{month_str}"
@@ -125,8 +120,6 @@ def get_summary():
     """
     Returns everything the Dashboard needs in a single request:
     totals, category breakdown, monthly trend, and recent transactions.
-    Bundling these together (rather than 4 separate API calls from the
-    frontend) reduces round-trips for a page that needs all of it at once.
     """
     user_id = get_jwt_identity()
 
@@ -156,3 +149,160 @@ def get_summary():
         **dashboard_summary_schema.dump(summary_data),
         "recent_transactions": transactions_schema.dump(recent),
     }), 200
+
+
+def _period_bounds(month, year):
+    """Returns the first and last calendar day of a given month/year."""
+    import calendar
+    last_day = calendar.monthrange(year, month)[1]
+    return date(year, month, 1), date(year, month, last_day)
+
+
+def _previous_period(month, year):
+    """Returns the (month, year) immediately before the given one."""
+    if month == 1:
+        return 12, year - 1
+    return month - 1, year
+
+
+@analytics_bp.route("/comparison", methods=["GET"])
+@jwt_required()
+def get_comparison():
+    """
+    Compares totals for a given month/year against the immediately
+    preceding month. Defaults to the current month if not specified.
+    """
+    user_id = get_jwt_identity()
+
+    month = request.args.get("month", type=int, default=date.today().month)
+    year = request.args.get("year", type=int, default=date.today().year)
+    prev_month, prev_year = _previous_period(month, year)
+
+    current_start, current_end = _period_bounds(month, year)
+    previous_start, previous_end = _period_bounds(prev_month, prev_year)
+
+    def totals_for_range(start, end):
+        results = (
+            db.session.query(Transaction.type, func.sum(Transaction.amount))
+            .filter(
+                Transaction.user_id == user_id,
+                Transaction.date >= start,
+                Transaction.date <= end,
+            )
+            .group_by(Transaction.type)
+            .all()
+        )
+        totals = {"income": 0, "expense": 0}
+        for tx_type, total in results:
+            totals[tx_type] = total or 0
+        return totals
+
+    current = totals_for_range(current_start, current_end)
+    previous = totals_for_range(previous_start, previous_end)
+
+    def percent_change(old, new):
+        if not old:
+            return None
+        return round((float(new) - float(old)) / float(old) * 100, 1)
+
+    data = {
+        "current_income": current["income"],
+        "current_expenses": current["expense"],
+        "previous_income": previous["income"],
+        "previous_expenses": previous["expense"],
+        "income_change_percent": percent_change(previous["income"], current["income"]),
+        "expense_change_percent": percent_change(previous["expense"], current["expense"]),
+    }
+
+    return jsonify(comparison_schema.dump(data)), 200
+
+
+@analytics_bp.route("/trends", methods=["GET"])
+@jwt_required()
+def get_trends():
+    """
+    Returns per-category expense trends across a custom date range
+    (?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD), grouped by month,
+    plus a ranked 'top categories' summary for that same range.
+    Defaults to the last 6 months if no range is given.
+    """
+    from dateutil.relativedelta import relativedelta
+
+    user_id = get_jwt_identity()
+
+    end_date_str = request.args.get("end_date")
+    start_date_str = request.args.get("start_date")
+
+    end_dt = date.today() if not end_date_str else date.fromisoformat(end_date_str)
+    start_dt = (
+        (end_dt - relativedelta(months=6)
+         ) if not start_date_str else date.fromisoformat(start_date_str)
+    )
+
+    rows = (
+        db.session.query(
+            Category.id,
+            Category.name,
+            Category.color,
+            func.strftime("%Y-%m", Transaction.date).label("period"),
+            func.sum(Transaction.amount).label("total"),
+        )
+        .join(Transaction, Transaction.category_id == Category.id)
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.type == "expense",
+            Transaction.date >= start_dt,
+            Transaction.date <= end_dt,
+        )
+        .group_by(Category.id, Category.name, Category.color, "period")
+        .order_by("period")
+        .all()
+    )
+
+    series_map = {}
+    grand_total = 0
+
+    for cat_id, cat_name, color, period, total in rows:
+        total = total or 0
+        grand_total += float(total)
+
+        if cat_id not in series_map:
+            series_map[cat_id] = {
+                "category_id": cat_id,
+                "category_name": cat_name,
+                "color": color,
+                "points": [],
+                "_total": 0,
+            }
+
+        year_str, month_str = period.split("-")
+        label = f"{month_abbr[int(month_str)]} {year_str}"
+
+        series_map[cat_id]["points"].append(
+            {"period": period, "label": label, "total": total})
+        series_map[cat_id]["_total"] += float(total)
+
+    series = list(series_map.values())
+
+    top_categories = sorted(
+        [
+            {
+                "category_id": s["category_id"],
+                "category_name": s["category_name"],
+                "color": s["color"],
+                "total": s["_total"],
+                "percent_of_total": round((s["_total"] / grand_total) * 100, 1) if grand_total else 0,
+            }
+            for s in series
+        ],
+        key=lambda x: x["total"],
+        reverse=True,
+    )
+
+    data = {
+        "series": series,
+        "top_categories": top_categories,
+        "total_expenses": grand_total,
+    }
+
+    return jsonify(analytics_trends_schema.dump(data)), 200

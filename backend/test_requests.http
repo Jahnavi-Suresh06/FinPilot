@@ -116,3 +116,15 @@ Authorization: Bearer TOKEN_HERE
   "month": 8,
   "year": 2026
 }
+
+### Comparison (current vs previous month)
+GET http://127.0.0.1:5000/api/analytics/comparison
+Authorization: Bearer TOKEN_HERE
+
+### Trends (default: last 6 months)
+GET http://127.0.0.1:5000/api/analytics/trends
+Authorization: Bearer TOKEN_HERE
+
+### Trends with a custom date range
+GET http://127.0.0.1:5000/api/analytics/trends?start_date=2026-06-01&end_date=2026-08-31
+Authorization: Bearer TOKEN_HERE

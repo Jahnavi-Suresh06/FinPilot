@@ -8,6 +8,7 @@ import CategoriesPage from "../pages/categories/CategoriesPage";
 import IncomePage from "../pages/transactions/IncomePage";
 import ExpensesPage from "../pages/transactions/ExpensesPage";
 import BudgetsPage from "../pages/budgets/BudgetsPage";
+import AnalyticsPage from "../pages/analytics/AnalyticsPage";
 
 const router = createBrowserRouter([
     {
@@ -45,6 +46,10 @@ const router = createBrowserRouter([
             {
                 path: "budgets",
                 element: <BudgetsPage />,
+            },
+            {
+                path: "analytics",
+                element: <AnalyticsPage />,
             },
         ],
     },
