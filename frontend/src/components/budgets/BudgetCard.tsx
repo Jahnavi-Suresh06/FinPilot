@@ -19,12 +19,14 @@ export default function BudgetCard({ budget, onEdit, onDelete, isDeleting = fals
                 <div className="flex items-center gap-3">
                     <span
                         className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white"
-                        style={{ backgroundColor: budget.category.color }}
+                        style={{ backgroundColor: budget.category?.color ?? "#9CA3AF" }}
                     >
-                        {budget.category.name.slice(0, 1).toUpperCase()}
+                        {(budget.category?.name ?? "?").slice(0, 1).toUpperCase()}
                     </span>
                     <div>
-                        <p className="text-sm font-semibold text-neutral-900">{budget.category.name}</p>
+                        <p className="text-sm font-semibold text-neutral-900">
+                            {budget.category?.name ?? "Unknown category"}
+                        </p>
                         <p className="text-xs text-neutral-500">
                             Limit: {formatCurrency(budget.limit_amount)}
                         </p>

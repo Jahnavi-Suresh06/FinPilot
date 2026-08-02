@@ -22,12 +22,14 @@ export default function TransactionList({
                     <div className="flex items-center gap-3">
                         <span
                             className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white"
-                            style={{ backgroundColor: transaction.category.color }}
+                            style={{ backgroundColor: transaction.category?.color ?? "#9CA3AF" }}
                         >
-                            {transaction.category.name.slice(0, 1).toUpperCase()}
+                            {(transaction.category?.name ?? "?").slice(0, 1).toUpperCase()}
                         </span>
                         <div>
-                            <p className="text-sm font-medium text-neutral-900">{transaction.category.name}</p>
+                            <p className="text-sm font-medium text-neutral-900">
+                                {transaction.category?.name ?? "Unknown category"}
+                            </p>
                             <p className="text-xs text-neutral-500">
                                 {formatDate(transaction.date)}
                                 {transaction.note ? ` · ${transaction.note}` : ""}
