@@ -7,6 +7,7 @@ import RegisterPage from "../pages/auth/RegisterPage";
 import CategoriesPage from "../pages/categories/CategoriesPage";
 import IncomePage from "../pages/transactions/IncomePage";
 import ExpensesPage from "../pages/transactions/ExpensesPage";
+import BudgetsPage from "../pages/budgets/BudgetsPage";
 
 const router = createBrowserRouter([
     {
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
             {
                 path: "expenses",
                 element: <ExpensesPage />,
+            },
+            {
+                path: "budgets",
+                element: <BudgetsPage />,
             },
         ],
     },
