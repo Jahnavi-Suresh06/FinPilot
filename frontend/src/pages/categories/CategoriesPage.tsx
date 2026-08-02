@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Trash2, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, Loader2 } from "lucide-react";
 
 import Modal from "../../components/ui/Modal";
 import LoadingState from "../../components/states/LoadingState";
@@ -22,6 +22,9 @@ export default function CategoriesPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
 
     const loadCategories = useCallback(async () => {
         setIsLoading(true);
@@ -42,18 +45,19 @@ export default function CategoriesPage() {
 
     function openAddModal() {
         setEditingCategory(null);
+        setFormError(null);
         setIsModalOpen(true);
     }
 
     function openEditModal(category: Category) {
         setEditingCategory(category);
+        setFormError(null);
         setIsModalOpen(true);
     }
 
-    const [formError, setFormError] = useState<string | null>(null);
-
     async function handleFormSubmit(data: CategoryFormValues) {
         setFormError(null);
+        setIsSaving(true);
         try {
             if (editingCategory) {
                 const updated = await updateCategory(editingCategory.id, data);
@@ -69,6 +73,8 @@ export default function CategoriesPage() {
             setFormError(
                 backendErrors?.name?.[0] ?? backendErrors?.general?.[0] ?? "Something went wrong. Please try again.",
             );
+        } finally {
+            setIsSaving(false);
         }
     }
 
@@ -78,8 +84,15 @@ export default function CategoriesPage() {
         );
         if (!confirmed) return;
 
-        await deleteCategory(category.id);
-        setCategories((prev) => prev.filter((c) => c.id !== category.id));
+        setDeletingId(category.id);
+        try {
+            await deleteCategory(category.id);
+            setCategories((prev) => prev.filter((c) => c.id !== category.id));
+        } catch {
+            window.alert("Failed to delete this category. Please try again.");
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     return (
@@ -144,7 +157,8 @@ export default function CategoriesPage() {
                                     <button
                                         type="button"
                                         onClick={() => openEditModal(category)}
-                                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                                        disabled={deletingId === category.id}
+                                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
                                         aria-label={`Edit ${category.name}`}
                                     >
                                         <Pencil className="h-4 w-4" />
@@ -152,10 +166,15 @@ export default function CategoriesPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleDelete(category)}
-                                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600"
+                                        disabled={deletingId === category.id}
+                                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600 disabled:cursor-not-allowed disabled:opacity-50"
                                         aria-label={`Delete ${category.name}`}
                                     >
-                                        <Trash2 className="h-4 w-4" />
+                                        {deletingId === category.id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                        )}
                                     </button>
                                 </div>
                             </li>
@@ -167,6 +186,7 @@ export default function CategoriesPage() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => {
+                    if (isSaving) return;
                     setIsModalOpen(false);
                     setFormError(null);
                 }}

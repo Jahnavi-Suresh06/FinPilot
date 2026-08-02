@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Loader2 } from "lucide-react";
 import type { Transaction } from "../../types/transaction";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
@@ -6,9 +6,15 @@ interface TransactionListProps {
     transactions: Transaction[];
     onEdit: (transaction: Transaction) => void;
     onDelete: (transaction: Transaction) => void;
+    deletingId?: number | null;
 }
 
-export default function TransactionList({ transactions, onEdit, onDelete }: TransactionListProps) {
+export default function TransactionList({
+    transactions,
+    onEdit,
+    onDelete,
+    deletingId = null,
+}: TransactionListProps) {
     return (
         <ul className="divide-y divide-neutral-100">
             {transactions.map((transaction) => (
@@ -42,7 +48,8 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Tran
                             <button
                                 type="button"
                                 onClick={() => onEdit(transaction)}
-                                className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                                disabled={deletingId === transaction.id}
+                                className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Edit transaction"
                             >
                                 <Pencil className="h-4 w-4" />
@@ -50,10 +57,15 @@ export default function TransactionList({ transactions, onEdit, onDelete }: Tran
                             <button
                                 type="button"
                                 onClick={() => onDelete(transaction)}
-                                className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600"
+                                disabled={deletingId === transaction.id}
+                                className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600 disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-label="Delete transaction"
                             >
-                                <Trash2 className="h-4 w-4" />
+                                {deletingId === transaction.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                )}
                             </button>
                         </div>
                     </div>

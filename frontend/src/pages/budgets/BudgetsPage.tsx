@@ -33,6 +33,8 @@ export default function BudgetsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
@@ -87,6 +89,7 @@ export default function BudgetsPage() {
 
     async function handleFormSubmit(data: BudgetFormValues) {
         setFormError(null);
+        setIsSaving(true);
         try {
             if (editingBudget) {
                 await updateBudget(editingBudget.id, data);
@@ -100,6 +103,8 @@ export default function BudgetsPage() {
             const backendErrors = axiosError.response?.data?.errors;
             const firstError = backendErrors ? Object.values(backendErrors)[0]?.[0] : undefined;
             setFormError(firstError ?? "Something went wrong. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     }
 
@@ -109,8 +114,15 @@ export default function BudgetsPage() {
         );
         if (!confirmed) return;
 
-        await deleteBudget(budget.id);
-        await loadData();
+        setDeletingId(budget.id);
+        try {
+            await deleteBudget(budget.id);
+            await loadData();
+        } catch {
+            window.alert("Failed to delete this budget. Please try again.");
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     const hasNoExpenseCategories = !isLoading && !error && categories.length === 0;
@@ -197,6 +209,7 @@ export default function BudgetsPage() {
                                 budget={budget}
                                 onEdit={openEditModal}
                                 onDelete={handleDelete}
+                                isDeleting={deletingId === budget.id}
                             />
                         ))}
                     </div>
@@ -205,7 +218,10 @@ export default function BudgetsPage() {
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    if (isSaving) return;
+                    setIsModalOpen(false);
+                }}
                 title={editingBudget ? "Edit budget" : "Add budget"}
             >
                 {formError && (

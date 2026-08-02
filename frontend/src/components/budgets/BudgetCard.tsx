@@ -1,4 +1,4 @@
-import { Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import type { Budget } from "../../types/budget";
 import { formatCurrency } from "../../utils/formatters";
 import ProgressBar from "../ui/ProgressBar";
@@ -7,9 +7,10 @@ interface BudgetCardProps {
     budget: Budget;
     onEdit: (budget: Budget) => void;
     onDelete: (budget: Budget) => void;
+    isDeleting?: boolean;
 }
 
-export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
+export default function BudgetCard({ budget, onEdit, onDelete, isDeleting = false }: BudgetCardProps) {
     const isOver = budget.percent_used >= 100;
 
     return (
@@ -34,7 +35,8 @@ export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps
                     <button
                         type="button"
                         onClick={() => onEdit(budget)}
-                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                        disabled={isDeleting}
+                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 disabled:cursor-not-allowed disabled:opacity-50"
                         aria-label="Edit budget"
                     >
                         <Pencil className="h-4 w-4" />
@@ -42,10 +44,11 @@ export default function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps
                     <button
                         type="button"
                         onClick={() => onDelete(budget)}
-                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600"
+                        disabled={isDeleting}
+                        className="rounded-lg p-2 text-neutral-400 transition hover:bg-danger-50 hover:text-danger-600 disabled:cursor-not-allowed disabled:opacity-50"
                         aria-label="Delete budget"
                     >
-                        <Trash2 className="h-4 w-4" />
+                        {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </button>
                 </div>
             </div>

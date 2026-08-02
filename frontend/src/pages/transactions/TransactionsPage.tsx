@@ -36,6 +36,8 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const isIncome = type === "income";
     const pageTitle = isIncome ? "Income" : "Expenses";
@@ -82,6 +84,7 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
 
     async function handleFormSubmit(data: TransactionFormValues) {
         setFormError(null);
+        setIsSaving(true);
         try {
             if (editingTransaction) {
                 await updateTransaction(editingTransaction.id, data);
@@ -95,6 +98,8 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
             const backendErrors = axiosError.response?.data?.errors;
             const firstError = backendErrors ? Object.values(backendErrors)[0]?.[0] : undefined;
             setFormError(firstError ?? "Something went wrong. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     }
 
@@ -104,8 +109,15 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
         );
         if (!confirmed) return;
 
-        await deleteTransaction(transaction.id);
-        await loadData();
+        setDeletingId(transaction.id);
+        try {
+            await deleteTransaction(transaction.id);
+            await loadData();
+        } catch {
+            window.alert(`Failed to delete this ${type}. Please try again.`);
+        } finally {
+            setDeletingId(null);
+        }
     }
 
     const hasNoCategories = !isLoading && !error && categories.length === 0;
@@ -159,6 +171,7 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
                             transactions={transactions}
                             onEdit={openEditModal}
                             onDelete={handleDelete}
+                            deletingId={deletingId}
                         />
 
                         {totalPages > 1 && (
@@ -192,7 +205,10 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={() => {
+                    if (isSaving) return;
+                    setIsModalOpen(false);
+                }}
                 title={editingTransaction ? `Edit ${type}` : `Add ${type}`}
             >
                 {formError && (
