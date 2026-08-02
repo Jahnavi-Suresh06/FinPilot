@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Tag, Loader2 } from "lucide-react";
 
-import Modal from "../../components/ui/Modal";
-import LoadingState from "../../components/states/LoadingState";
+import { useToast } from "../../context/ToastContext";
+import Modal from "../../components/ui/Modal"; import LoadingState from "../../components/states/LoadingState";
 import EmptyState from "../../components/states/EmptyState";
 import ErrorState from "../../components/states/ErrorState";
 import CategoryForm from "../../components/categories/CategoryForm";
@@ -16,6 +16,7 @@ import {
 } from "../../services/categoryService";
 
 export default function CategoriesPage() {
+    const { showToast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -62,9 +63,11 @@ export default function CategoriesPage() {
             if (editingCategory) {
                 const updated = await updateCategory(editingCategory.id, data);
                 setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+                showToast("Category updated successfully.");
             } else {
                 const created = await createCategory(data);
                 setCategories((prev) => [...prev, created]);
+                showToast("Category created successfully.");
             }
             setIsModalOpen(false);
         } catch (err) {
@@ -88,6 +91,7 @@ export default function CategoriesPage() {
         try {
             await deleteCategory(category.id);
             setCategories((prev) => prev.filter((c) => c.id !== category.id));
+            showToast("Category deleted successfully.");
         } catch {
             window.alert("Failed to delete this category. Please try again.");
         } finally {

@@ -3,8 +3,8 @@ import { Plus, Wallet as WalletIcon, ChevronLeft, ChevronRight } from "lucide-re
 import { AxiosError } from "axios";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
-import Modal from "../../components/ui/Modal";
-import LoadingState from "../../components/states/LoadingState";
+import { useToast } from "../../context/ToastContext";
+import Modal from "../../components/ui/Modal"; import LoadingState from "../../components/states/LoadingState";
 import EmptyState from "../../components/states/EmptyState";
 import ErrorState from "../../components/states/ErrorState";
 import TransactionForm from "../../components/transactions/TransactionForm";
@@ -25,6 +25,7 @@ interface TransactionsPageProps {
 }
 
 export default function TransactionsPage({ type }: TransactionsPageProps) {
+    const { showToast } = useToast();
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -88,8 +89,10 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
         try {
             if (editingTransaction) {
                 await updateTransaction(editingTransaction.id, data);
+                showToast(`${isIncome ? "Income" : "Expense"} updated successfully.`);
             } else {
                 await createTransaction(data);
+                showToast(`${isIncome ? "Income" : "Expense"} added successfully.`);
             }
             setIsModalOpen(false);
             await loadData();
@@ -113,6 +116,7 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
         try {
             await deleteTransaction(transaction.id);
             await loadData();
+            showToast(`${isIncome ? "Income" : "Expense"} deleted successfully.`);
         } catch {
             window.alert(`Failed to delete this ${type}. Please try again.`);
         } finally {

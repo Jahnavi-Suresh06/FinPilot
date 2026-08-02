@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Plus, PiggyBank, ChevronLeft, ChevronRight } from "lucide-react";
 import { AxiosError } from "axios";
 
+import { useToast } from "../../context/ToastContext";
 import Modal from "../../components/ui/Modal";
 import LoadingState from "../../components/states/LoadingState";
 import EmptyState from "../../components/states/EmptyState";
@@ -21,6 +22,7 @@ const MONTH_NAMES = [
 ];
 
 export default function BudgetsPage() {
+    const { showToast } = useToast();
     const today = new Date();
     const [month, setMonth] = useState(today.getMonth() + 1);
     const [year, setYear] = useState(today.getFullYear());
@@ -93,8 +95,10 @@ export default function BudgetsPage() {
         try {
             if (editingBudget) {
                 await updateBudget(editingBudget.id, data);
+                showToast("Budget updated successfully.");
             } else {
                 await createBudget(data);
+                showToast("Budget created successfully.");
             }
             setIsModalOpen(false);
             await loadData();
@@ -118,6 +122,7 @@ export default function BudgetsPage() {
         try {
             await deleteBudget(budget.id);
             await loadData();
+            showToast("Budget deleted successfully.");
         } catch {
             window.alert("Failed to delete this budget. Please try again.");
         } finally {
