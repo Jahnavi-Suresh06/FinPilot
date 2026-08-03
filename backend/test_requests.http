@@ -128,3 +128,7 @@ Authorization: Bearer TOKEN_HERE
 ### Trends with a custom date range
 GET http://127.0.0.1:5000/api/analytics/trends?start_date=2026-06-01&end_date=2026-08-31
 Authorization: Bearer TOKEN_HERE
+
+### Expense prediction
+GET http://127.0.0.1:5000/api/ai/predict-expense
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTczMzEzOSwianRpIjoiZGI5NDRmODEtYTk3MC00ZDM5LWI1ZGUtYjQwYTNmZmQyZGE0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3MzMxMzksImNzcmYiOiI5YTU4NDUzMy0zMDIyLTQxOGEtYTg5NC0zZjdhMDY2OGIxOGMiLCJleHAiOjE3ODU4MTk1Mzl9.DoGNBGc_8belQDAzW9T7tQgzDoktjiVzlkIUtFD2Wd0

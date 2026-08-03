@@ -7,12 +7,15 @@ import SummaryCard from "../../components/dashboard/SummaryCard";
 import CategoryBreakdownChart from "../../components/dashboard/CategoryBreakdownChart";
 import MonthlyTrendChart from "../../components/dashboard/MonthlyTrendChart";
 import RecentTransactions from "../../components/dashboard/RecentTransactions";
+import PredictionCard from "../../components/ai/PredictionCard";
 import { formatCurrency } from "../../utils/formatters";
-import { getDashboardSummary } from "../../services/analyticsService";
+import { getDashboardSummary, getExpensePrediction } from "../../services/analyticsService";
 import type { DashboardSummary } from "../../types/analytics";
+import type { ExpensePrediction } from "../../types/prediction";
 
 export default function DashboardPage() {
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
+    const [prediction, setPrediction] = useState<ExpensePrediction | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,8 +23,12 @@ export default function DashboardPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const data = await getDashboardSummary();
-            setSummary(data);
+            const [summaryData, predictionData] = await Promise.all([
+                getDashboardSummary(),
+                getExpensePrediction(),
+            ]);
+            setSummary(summaryData);
+            setPrediction(predictionData);
         } catch {
             setError("Failed to load your dashboard.");
         } finally {
@@ -91,13 +98,19 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recent transactions */}
-            <div className="mt-6 rounded-2xl border border-neutral-200 bg-white">
-                <div className="px-5 pt-5">
-                    <h3 className="text-sm font-semibold text-neutral-900">Recent Transactions</h3>
+            {/* AI prediction + recent transactions */}
+            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-5">
+                <div className="lg:col-span-2">
+                    {prediction && <PredictionCard prediction={prediction} />}
                 </div>
-                <div className="mt-3">
-                    <RecentTransactions transactions={summary.recent_transactions} />
+
+                <div className="rounded-2xl border border-neutral-200 bg-white lg:col-span-3">
+                    <div className="px-5 pt-5">
+                        <h3 className="text-sm font-semibold text-neutral-900">Recent Transactions</h3>
+                    </div>
+                    <div className="mt-3">
+                        <RecentTransactions transactions={summary.recent_transactions} />
+                    </div>
                 </div>
             </div>
         </div>

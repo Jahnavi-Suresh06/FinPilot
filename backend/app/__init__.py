@@ -35,11 +35,13 @@ def create_app(config_name="development"):
     from app.routes.transaction_routes import transaction_bp
     from app.routes.analytics_routes import analytics_bp
     from app.routes.budget_routes import budget_bp
+    from app.routes.ai_routes import ai_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(category_bp)
     app.register_blueprint(transaction_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(budget_bp)
+    app.register_blueprint(ai_bp)
 
     @app.route("/api/health", methods=["GET"])
     def health_check():

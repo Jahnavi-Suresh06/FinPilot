@@ -1,6 +1,7 @@
 import api from "./api";
 import type { DashboardSummary } from "../types/analytics";
 import type { ComparisonData, AnalyticsTrends } from "../types/analyticsExtras";
+import type { ExpensePrediction } from "../types/prediction";
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
     const response = await api.get<DashboardSummary>("/analytics/summary");
@@ -18,5 +19,11 @@ export async function getTrends(startDate?: string, endDate?: string): Promise<A
     const response = await api.get<AnalyticsTrends>("/analytics/trends", {
         params: startDate && endDate ? { start_date: startDate, end_date: endDate } : undefined,
     });
+    return response.data;
+}
+
+
+export async function getExpensePrediction(): Promise<ExpensePrediction> {
+    const response = await api.get<ExpensePrediction>("/ai/predict-expense");
     return response.data;
 }
