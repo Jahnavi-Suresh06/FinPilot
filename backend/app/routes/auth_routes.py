@@ -4,7 +4,13 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 from app.extensions import db
 from app.models.user import User
-from app.schemas.user_schema import register_schema, login_schema, user_schema
+from app.schemas.user_schema import (
+    register_schema,
+    login_schema,
+    user_schema,
+    update_profile_schema,
+    change_password_schema,
+)
 
 # A Blueprint groups related routes together. 'auth_bp' is just a Python
 # variable name; "auth" (the second argument) is Flask's internal name
@@ -21,27 +27,21 @@ def register():
 
     json_data = request.get_json()
 
-    # Step 1: Validate the incoming data against our schema rules.
     try:
         data = register_schema.load(json_data)
     except ValidationError as err:
-        # err.messages is a dict like {"password": ["Password must be at least 8 characters long."]}
         return jsonify({"errors": err.messages}), 400
 
-    # Step 2: Check if an account with this email already exists.
     existing_user = User.query.filter_by(email=data["email"]).first()
     if existing_user:
         return jsonify({"errors": {"email": ["An account with this email already exists."]}}), 409
 
-    # Step 3: Create the new user and hash their password.
     new_user = User(email=data["email"], full_name=data["full_name"])
     new_user.set_password(data["password"])
 
     db.session.add(new_user)
     db.session.commit()
 
-    # Step 4: Issue a JWT immediately, so the user is logged in right after registering.
-    # We convert new_user.id to a string, since JWT identities must be strings.
     access_token = create_access_token(identity=str(new_user.id))
 
     return jsonify({
@@ -67,10 +67,6 @@ def login():
 
     user = User.query.filter_by(email=data["email"]).first()
 
-    # Deliberately vague error message: we never reveal whether it was the
-    # email or the password that was wrong. Being specific here is a real
-    # security weakness — it helps attackers figure out which emails
-    # are registered accounts.
     if not user or not user.check_password(data["password"]):
         return jsonify({"errors": {"general": ["Invalid email or password."]}}), 401
 
@@ -88,13 +84,7 @@ def login():
 def get_current_user():
     """
     Returns the currently logged-in user's data.
-    Protected by @jwt_required() — this decorator automatically rejects
-    the request with a 401 error if no valid token is present, BEFORE
-    our function body ever runs.
     """
-
-    # get_jwt_identity() reads the user ID we stored inside the token
-    # back when it was created with create_access_token(identity=...).
     current_user_id = get_jwt_identity()
 
     user = User.query.get(int(current_user_id))
@@ -102,3 +92,75 @@ def get_current_user():
         return jsonify({"errors": {"general": ["User not found."]}}), 404
 
     return jsonify({"user": user_schema.dump(user)}), 200
+
+
+@auth_bp.route("/profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    """
+    Updates the logged-in user's full_name and email.
+    Expects JSON body: { "full_name": "...", "email": "..." }
+    Returns 200 with the updated user object on success.
+    """
+    current_user_id = get_jwt_identity()
+    user = User.query.get(int(current_user_id))
+    if not user:
+        return jsonify({"errors": {"general": ["User not found."]}}), 404
+
+    json_data = request.get_json()
+
+    try:
+        data = update_profile_schema.load(json_data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
+
+    # If the email is changing, confirm no OTHER account already uses it.
+    # We exclude the current user's own row (User.id != user.id) so that
+    # saving the profile WITHOUT changing the email doesn't incorrectly
+    # get rejected as "already taken" by the user's own existing record.
+    if data["email"] != user.email:
+        existing = User.query.filter(
+            User.email == data["email"], User.id != user.id).first()
+        if existing:
+            return jsonify({"errors": {"email": ["An account with this email already exists."]}}), 409
+
+    user.full_name = data["full_name"]
+    user.email = data["email"]
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Profile updated successfully.",
+        "user": user_schema.dump(user),
+    }), 200
+
+
+@auth_bp.route("/password", methods=["PUT"])
+@jwt_required()
+def change_password():
+    """
+    Changes the logged-in user's password.
+    Expects JSON body: { "current_password": "...", "new_password": "..." }
+    Requires the CURRENT password to be correct before allowing the change
+    (protects against session hijacking via unattended, logged-in devices).
+    Returns 401 if current_password is wrong, 200 on success.
+    """
+    current_user_id = get_jwt_identity()
+    user = User.query.get(int(current_user_id))
+    if not user:
+        return jsonify({"errors": {"general": ["User not found."]}}), 404
+
+    json_data = request.get_json()
+
+    try:
+        data = change_password_schema.load(json_data)
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 400
+
+    if not user.check_password(data["current_password"]):
+        return jsonify({"errors": {"current_password": ["Current password is incorrect."]}}), 401
+
+    user.set_password(data["new_password"])
+    db.session.commit()
+
+    return jsonify({"message": "Password changed successfully."}), 200

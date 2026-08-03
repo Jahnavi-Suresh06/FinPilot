@@ -36,17 +36,17 @@ class User(db.Model):
     def set_password(self, plain_password):
         """
         Hashes a plain-text password and stores the hash.
-        Called once during registration. We NEVER store plain_password itself.
+        Called during registration AND password change. We NEVER store
+        plain_password itself.
         """
         self.password_hash = bcrypt.generate_password_hash(
             plain_password).decode("utf-8")
 
     def check_password(self, plain_password):
         """
-        Compares a plain-text password (typed at login) against the stored hash.
-        Returns True if they match, False otherwise.
-        Note: this does NOT 'decrypt' the hash — hashing is one-way.
-        bcrypt re-hashes the input and compares the results.
+        Compares a plain-text password against the stored hash.
+        Returns True if they match, False otherwise. Used at login AND
+        when verifying the current password before allowing a change.
         """
         return bcrypt.check_password_hash(self.password_hash, plain_password)
 

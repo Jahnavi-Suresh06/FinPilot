@@ -10,6 +10,9 @@ import ExpensesPage from "../pages/transactions/ExpensesPage";
 import BudgetsPage from "../pages/budgets/BudgetsPage";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
 import AdvisorPage from "../pages/advisor/AdvisorPage";
+import SettingsPage from "../pages/settings/SettingsPage";
+import ProfilePage from "../pages/settings/ProfilePage";
+import ChangePasswordPage from "../pages/settings/ChangePasswordPage";
 
 const router = createBrowserRouter([
     {
@@ -51,6 +54,15 @@ const router = createBrowserRouter([
             {
                 path: "analytics",
                 element: <AnalyticsPage />,
+            },
+            {
+                path: "settings",
+                element: <SettingsPage />,
+                children: [
+                    { index: true, element: <ProfilePage /> },
+                    { path: "profile", element: <ProfilePage /> },
+                    { path: "password", element: <ChangePasswordPage /> },
+                ],
             },
             {
                 path: "ai-advisor",

@@ -7,11 +7,6 @@ from app.extensions import db, jwt, cors, ma, migrate, bcrypt
 def create_app(config_name="development"):
     """
     Application factory function.
-
-    Instead of creating the Flask app at import time, we build it
-    fresh inside this function. This lets us create multiple app
-    instances with different configurations (development, testing,
-    production) without any of them interfering with each other.
     """
 
     app = Flask(__name__)
@@ -25,11 +20,8 @@ def create_app(config_name="development"):
     migrate.init_app(app, db)
     bcrypt.init_app(app)
 
-    # Import models so Flask-Migrate can detect tables to create/update.
     from app.models import user, category, transaction, budget
 
-    # Register blueprints: this is how Flask "plugs in" a group of routes
-    # defined in a separate file into the main application.
     from app.routes.auth_routes import auth_bp
     from app.routes.category_routes import category_bp
     from app.routes.transaction_routes import transaction_bp
@@ -37,6 +29,7 @@ def create_app(config_name="development"):
     from app.routes.budget_routes import budget_bp
     from app.routes.ai_routes import ai_bp
     from app.routes.export_routes import export_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(category_bp)
     app.register_blueprint(transaction_bp)

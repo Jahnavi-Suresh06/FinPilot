@@ -136,3 +136,82 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsI
 ### AI insights
 GET http://127.0.0.1:5000/api/ai/insights
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTczODMxMiwianRpIjoiMjYxMGFjZjUtODc1Mi00MjhkLWIxMzUtZTUzZjQwZDNhNjIzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3MzgzMTIsImNzcmYiOiJjMmRjMDdhOC1kZjYyLTQxNTktYjA1Ni05OGQ3OTJlZDVkYWIiLCJleHAiOjE3ODU4MjQ3MTJ9.x1blhWIg8bydNEB_Ud-_3gbuTnsqYn0Acfi-ErMjtHY
+
+### Update profile (use a fresh token from a Login request above)
+PUT http://127.0.0.1:5000/api/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MDY3OCwianRpIjoiYmU5NjAwZTAtMmNjYi00ZTBmLWIwNDMtMzFmMzI4ZmJhZmZiIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjA2NzgsImNzcmYiOiJmMDNlMzhhOS0zZjEwLTQzNTQtYjhiNC02Zjk0YWFhOTg0NDMiLCJleHAiOjE3ODU4NDcwNzh9.NHi1yMpiyyoZI-F6o9Tjjj0Ls6TkI-ZjZYIdjG_dNjs
+
+{
+  "full_name": "John Doe Updated",
+  "email": "john.doe@example.com"
+}
+
+### Update profile - duplicate email test (expect 409 CONFLICT)
+PUT http://127.0.0.1:5000/api/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MTg3MywianRpIjoiYjI2OGZkZTctZTg5NS00MDRmLTkzZTQtZWVmZjljNWM4OTE1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjE4NzMsImNzcmYiOiIyMDRjNTg1Yy02NDEyLTQ5MDMtYTEwYS04OWQ2ZTM5NjczNjQiLCJleHAiOjE3ODU4NDgyNzN9.QqC_eXAhhfIWtGYPwSmfEHSqaBGNW_3uxQxcLz6L5_o
+
+{
+  "full_name": "John Doe Updated",
+  "email": "jane.tester@example.com"
+}
+
+### Change password - WRONG current password (expect 401)
+PUT http://127.0.0.1:5000/api/auth/password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MTg3MywianRpIjoiYjI2OGZkZTctZTg5NS00MDRmLTkzZTQtZWVmZjljNWM4OTE1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjE4NzMsImNzcmYiOiIyMDRjNTg1Yy02NDEyLTQ5MDMtYTEwYS04OWQ2ZTM5NjczNjQiLCJleHAiOjE3ODU4NDgyNzN9.QqC_eXAhhfIWtGYPwSmfEHSqaBGNW_3uxQxcLz6L5_o
+
+{
+  "current_password": "WrongPassword999",
+  "new_password": "NewSecurePass456"
+}
+
+### Update profile (use a fresh token from a Login request above)
+PUT http://127.0.0.1:5000/api/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MDAzMywianRpIjoiODEyYWU1ZGEtZGQ1Ny00ZTVhLWIwM2ItODA5ZTViZjdhZjFlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjAwMzMsImNzcmYiOiI1ZGQ1ZTkwZC1lM2M2LTRkOGQtYjRmMi05ZmYxMmI4Y2VjYjMiLCJleHAiOjE3ODU4NDY0MzN9.HZqZxM_rj2v_rnPtxSMe7qKiCignOLJZl9U9SRtnTao
+
+{
+  "full_name": "Jane Tester Updated",
+  "email": "jane.tester@example.com"
+}
+
+### Update profile - duplicate email test (use an email belonging to ANOTHER account)
+PUT http://127.0.0.1:5000/api/auth/profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MDAzMywianRpIjoiODEyYWU1ZGEtZGQ1Ny00ZTVhLWIwM2ItODA5ZTViZjdhZjFlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjAwMzMsImNzcmYiOiI1ZGQ1ZTkwZC1lM2M2LTRkOGQtYjRmMi05ZmYxMmI4Y2VjYjMiLCJleHAiOjE3ODU4NDY0MzN9.HZqZxM_rj2v_rnPtxSMe7qKiCignOLJZl9U9SRtnTao
+
+{
+  "full_name": "Jane Tester Updated",
+  "email": "john.doe@example.com"
+}
+
+### Change password - WRONG current password (expect 401)
+PUT http://127.0.0.1:5000/api/auth/password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MDAzMywianRpIjoiODEyYWU1ZGEtZGQ1Ny00ZTVhLWIwM2ItODA5ZTViZjdhZjFlIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjAwMzMsImNzcmYiOiI1ZGQ1ZTkwZC1lM2M2LTRkOGQtYjRmMi05ZmYxMmI4Y2VjYjMiLCJleHAiOjE3ODU4NDY0MzN9.HZqZxM_rj2v_rnPtxSMe7qKiCignOLJZl9U9SRtnTao
+
+{
+  "current_password": "WrongPassword999",
+  "new_password": "NewSecurePass456"
+}
+
+### Change password - CORRECT current password (expect 200)
+PUT http://127.0.0.1:5000/api/auth/password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc4NTc2MTg3MywianRpIjoiYjI2OGZkZTctZTg5NS00MDRmLTkzZTQtZWVmZjljNWM4OTE1IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE3ODU3NjE4NzMsImNzcmYiOiIyMDRjNTg1Yy02NDEyLTQ5MDMtYTEwYS04OWQ2ZTM5NjczNjQiLCJleHAiOjE3ODU4NDgyNzN9.QqC_eXAhhfIWtGYPwSmfEHSqaBGNW_3uxQxcLz6L5_o
+
+{
+  "current_password": "SecurePass123",
+  "new_password": "NewSecurePass456"
+}
+
+### Login with the NEW password
+POST http://127.0.0.1:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "NewSecurePass456"
+}
