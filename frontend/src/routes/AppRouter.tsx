@@ -9,6 +9,7 @@ import IncomePage from "../pages/transactions/IncomePage";
 import ExpensesPage from "../pages/transactions/ExpensesPage";
 import BudgetsPage from "../pages/budgets/BudgetsPage";
 import AnalyticsPage from "../pages/analytics/AnalyticsPage";
+import AdvisorPage from "../pages/advisor/AdvisorPage";
 
 const router = createBrowserRouter([
     {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
             {
                 path: "analytics",
                 element: <AnalyticsPage />,
+            },
+            {
+                path: "ai-advisor",
+                element: <AdvisorPage />,
             },
         ],
     },

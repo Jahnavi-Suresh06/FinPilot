@@ -2,6 +2,7 @@ import api from "./api";
 import type { DashboardSummary } from "../types/analytics";
 import type { ComparisonData, AnalyticsTrends } from "../types/analyticsExtras";
 import type { ExpensePrediction } from "../types/prediction";
+import type { InsightsResponse } from "../types/insight";
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
     const response = await api.get<DashboardSummary>("/analytics/summary");
@@ -25,5 +26,10 @@ export async function getTrends(startDate?: string, endDate?: string): Promise<A
 
 export async function getExpensePrediction(): Promise<ExpensePrediction> {
     const response = await api.get<ExpensePrediction>("/ai/predict-expense");
+    return response.data;
+}
+
+export async function getInsights(): Promise<InsightsResponse> {
+    const response = await api.get<InsightsResponse>("/ai/insights");
     return response.data;
 }
