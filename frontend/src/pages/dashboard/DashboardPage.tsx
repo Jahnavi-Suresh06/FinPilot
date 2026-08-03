@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { ArrowUpCircle, ArrowDownCircle, Wallet } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Wallet, FileDown, Loader2 } from "lucide-react";
 
 import LoadingState from "../../components/states/LoadingState";
 import ErrorState from "../../components/states/ErrorState";
@@ -10,10 +10,15 @@ import RecentTransactions from "../../components/dashboard/RecentTransactions";
 import PredictionCard from "../../components/ai/PredictionCard";
 import { formatCurrency } from "../../utils/formatters";
 import { getDashboardSummary, getExpensePrediction } from "../../services/analyticsService";
+import { exportMonthlyReportPdf } from "../../services/exportService";
+import { useToast } from "../../context/ToastContext";
 import type { DashboardSummary } from "../../types/analytics";
 import type { ExpensePrediction } from "../../types/prediction";
 
 export default function DashboardPage() {
+    const { showToast } = useToast();
+    const [isExporting, setIsExporting] = useState(false);
+
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [prediction, setPrediction] = useState<ExpensePrediction | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +45,19 @@ export default function DashboardPage() {
         loadSummary();
     }, [loadSummary]);
 
+    async function handleExportReport() {
+        setIsExporting(true);
+        try {
+            const today = new Date();
+            await exportMonthlyReportPdf(today.getMonth() + 1, today.getFullYear());
+            showToast("Monthly report downloaded successfully.");
+        } catch {
+            window.alert("Failed to generate report. Please try again.");
+        } finally {
+            setIsExporting(false);
+        }
+    }
+
     if (isLoading) {
         return <LoadingState message="Loading your dashboard..." />;
     }
@@ -52,9 +70,24 @@ export default function DashboardPage() {
 
     return (
         <div>
-            <div>
-                <h2 className="text-2xl font-bold text-neutral-900">Dashboard</h2>
-                <p className="mt-1 text-sm text-neutral-500">Your complete financial overview.</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-2xl font-bold text-neutral-900">Dashboard</h2>
+                    <p className="mt-1 text-sm text-neutral-500">Your complete financial overview.</p>
+                </div>
+                <button
+                    type="button"
+                    onClick={handleExportReport}
+                    disabled={isExporting}
+                    className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {isExporting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <FileDown className="h-4 w-4" />
+                    )}
+                    Download Monthly Report
+                </button>
             </div>
 
             {/* Summary cards */}

@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Wallet as WalletIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Wallet as WalletIcon, ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
 import { useToast } from "../../context/ToastContext";
-import Modal from "../../components/ui/Modal"; import LoadingState from "../../components/states/LoadingState";
+import Modal from "../../components/ui/Modal";
+import LoadingState from "../../components/states/LoadingState";
 import EmptyState from "../../components/states/EmptyState";
 import ErrorState from "../../components/states/ErrorState";
 import TransactionForm from "../../components/transactions/TransactionForm";
@@ -19,6 +20,7 @@ import {
     deleteTransaction,
 } from "../../services/transactionService";
 import { getCategories } from "../../services/categoryService";
+import { exportTransactionsCsv } from "../../services/exportService";
 
 interface TransactionsPageProps {
     type: CategoryType;
@@ -26,6 +28,7 @@ interface TransactionsPageProps {
 
 export default function TransactionsPage({ type }: TransactionsPageProps) {
     const { showToast } = useToast();
+
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +42,7 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
     const [formError, setFormError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     const isIncome = type === "income";
     const pageTitle = isIncome ? "Income" : "Expenses";
@@ -106,6 +110,18 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
         }
     }
 
+    async function handleExport() {
+        setIsExporting(true);
+        try {
+            await exportTransactionsCsv({ type });
+            showToast(`${isIncome ? "Income" : "Expenses"} exported successfully.`);
+        } catch {
+            window.alert("Failed to export. Please try again.");
+        } finally {
+            setIsExporting(false);
+        }
+    }
+
     async function handleDelete(transaction: Transaction) {
         const confirmed = window.confirm(
             `Delete this ${type}?\n\n${transaction.category.name} · ${formatCurrency(transaction.amount)} · ${formatDate(transaction.date)}\n\nThis cannot be undone.`,
@@ -135,15 +151,30 @@ export default function TransactionsPage({ type }: TransactionsPageProps) {
                         Track and manage your {pageTitle.toLowerCase()} entries.
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={openAddModal}
-                    disabled={hasNoCategories}
-                    className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <Plus className="h-4 w-4" />
-                    Add {isIncome ? "income" : "expense"}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={handleExport}
+                        disabled={isExporting || transactions.length === 0}
+                        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isExporting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Download className="h-4 w-4" />
+                        )}
+                        Export CSV
+                    </button>
+                    <button
+                        type="button"
+                        onClick={openAddModal}
+                        disabled={hasNoCategories}
+                        className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Add {isIncome ? "income" : "expense"}
+                    </button>
+                </div>
             </div>
 
             {hasNoCategories && (
