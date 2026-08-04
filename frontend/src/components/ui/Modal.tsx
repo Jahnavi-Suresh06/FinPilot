@@ -8,30 +8,24 @@ interface ModalProps {
     children: ReactNode;
 }
 
-/**
- * A generic, reusable modal dialog. Used for "Add Category" now, and
- * for add/edit forms across Income, Expenses, and Budgets in later phases.
- */
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            {/* Backdrop — clicking it closes the modal */}
             <div
-                className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm"
+                className="fixed inset-0 animate-fade-in bg-neutral-900/40 backdrop-blur-sm"
                 onClick={onClose}
                 aria-hidden="true"
             />
 
-            {/* Modal content */}
-            <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="relative z-10 w-full max-w-md animate-slide-up rounded-2xl bg-white p-6 shadow-xl">
                 <div className="mb-5 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600"
+                        className="rounded-lg p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
                         aria-label="Close"
                     >
                         <X className="h-5 w-5" />

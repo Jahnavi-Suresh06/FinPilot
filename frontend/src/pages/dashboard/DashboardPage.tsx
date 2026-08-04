@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import { ArrowUpCircle, ArrowDownCircle, Wallet, FileDown, Loader2 } from "lucide-react";
 
@@ -16,6 +17,7 @@ import type { DashboardSummary } from "../../types/analytics";
 import type { ExpensePrediction } from "../../types/prediction";
 
 export default function DashboardPage() {
+    usePageTitle("Dashboard");
     const { showToast } = useToast();
     const [isExporting, setIsExporting] = useState(false);
 

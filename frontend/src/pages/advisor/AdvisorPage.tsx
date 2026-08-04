@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import { Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -10,6 +11,7 @@ import type { Insight } from "../../types/insight";
 import type { ExpensePrediction } from "../../types/prediction";
 
 export default function AdvisorPage() {
+    usePageTitle("AI Advisor");
     const [insights, setInsights] = useState<Insight[]>([]);
     const [prediction, setPrediction] = useState<ExpensePrediction | null>(null);
     const [isLoading, setIsLoading] = useState(true);

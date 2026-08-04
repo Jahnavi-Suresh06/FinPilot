@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -13,6 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import type { ApiErrorResponse } from "../../types/auth";
 
 export default function LoginPage() {
+    usePageTitle("Login");
     const navigate = useNavigate();
     const { login } = useAuth();
 

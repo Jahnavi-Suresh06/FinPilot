@@ -1,7 +1,9 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { NavLink, Outlet } from "react-router-dom";
 import { User, KeyRound } from "lucide-react";
 
 export default function SettingsPage() {
+    usePageTitle("Settings");
     return (
         <div>
             <h2 className="text-2xl font-bold text-neutral-900">Settings</h2>

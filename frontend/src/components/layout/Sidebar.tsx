@@ -11,9 +11,6 @@ import {
     Tag,
 } from "lucide-react";
 
-// Each entry describes one item in the sidebar navigation.
-// Centralizing this as a list (instead of hardcoding six <NavLink> tags)
-// means adding a new page later is a one-line change here.
 const navItems = [
     { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
     { label: "Income", to: "/income", icon: ArrowUpCircle },
@@ -25,10 +22,13 @@ const navItems = [
     { label: "Settings", to: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+    onNavigate?: () => void;
+}
+
+export default function Sidebar({ onNavigate }: SidebarProps) {
     return (
-        <aside className="flex h-screen w-64 flex-col border-r border-neutral-200 bg-white">
-            {/* Logo / Brand */}
+        <aside className="flex h-full w-64 flex-col border-r border-neutral-200 bg-white">
             <div className="flex items-center gap-2 px-6 py-6">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600">
                     <Wallet className="h-5 w-5 text-white" />
@@ -36,14 +36,14 @@ export default function Sidebar() {
                 <span className="text-lg font-bold text-neutral-900">FinPilot</span>
             </div>
 
-            {/* Navigation Links */}
             <nav className="flex-1 space-y-1 px-3">
                 {navItems.map(({ label, to, icon: Icon }) => (
                     <NavLink
                         key={to}
                         to={to}
+                        onClick={onNavigate}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive
+                            `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${isActive
                                 ? "bg-primary-50 text-primary-700"
                                 : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                             }`

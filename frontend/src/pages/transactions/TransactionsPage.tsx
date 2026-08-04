@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Wallet as WalletIcon, ChevronLeft, ChevronRight, Download, Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
@@ -27,6 +28,7 @@ interface TransactionsPageProps {
 }
 
 export default function TransactionsPage({ type }: TransactionsPageProps) {
+    usePageTitle(type === "income" ? "Income" : "Expenses");
     const { showToast } = useToast();
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);

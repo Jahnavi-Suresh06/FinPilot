@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, PiggyBank, ChevronLeft, ChevronRight } from "lucide-react";
 import { AxiosError } from "axios";
@@ -22,6 +23,7 @@ const MONTH_NAMES = [
 ];
 
 export default function BudgetsPage() {
+    usePageTitle("Budgets");
     const { showToast } = useToast();
     const today = new Date();
     const [month, setMonth] = useState(today.getMonth() + 1);

@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, Tag, Loader2 } from "lucide-react";
 
@@ -16,6 +17,8 @@ import {
 } from "../../services/categoryService";
 
 export default function CategoriesPage() {
+    usePageTitle("Categories");
+    
     const { showToast } = useToast();
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);

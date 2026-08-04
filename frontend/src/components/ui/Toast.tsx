@@ -12,7 +12,7 @@ export default function Toast({ toast, onDismiss }: ToastProps) {
     return (
         <div
             role="status"
-            className={`flex w-full max-w-sm items-start gap-3 rounded-xl border bg-white p-4 shadow-lg ${isSuccess ? "border-success-500/20" : "border-danger-500/20"
+            className={`flex w-full max-w-sm animate-slide-up items-start gap-3 rounded-xl border bg-white p-4 shadow-lg ${isSuccess ? "border-success-500/20" : "border-danger-500/20"
                 }`}
         >
             {isSuccess ? (
@@ -26,7 +26,7 @@ export default function Toast({ toast, onDismiss }: ToastProps) {
             <button
                 type="button"
                 onClick={() => onDismiss(toast.id)}
-                className="shrink-0 rounded-md p-0.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600"
+                className="shrink-0 rounded-md p-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
                 aria-label="Dismiss notification"
             >
                 <X className="h-4 w-4" />

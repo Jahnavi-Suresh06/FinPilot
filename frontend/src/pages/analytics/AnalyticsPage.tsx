@@ -1,3 +1,4 @@
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useState, useEffect, useCallback } from "react";
 import LoadingState from "../../components/states/LoadingState";
 import ErrorState from "../../components/states/ErrorState";
@@ -11,6 +12,7 @@ import type { ComparisonData, AnalyticsTrends } from "../../types/analyticsExtra
 const MONTHS_BY_PRESET = { "3m": 3, "6m": 6, "12m": 12 };
 
 export default function AnalyticsPage() {
+    usePageTitle("Analytics");
     const [preset, setPreset] = useState<"3m" | "6m" | "12m">("6m");
 
     const [comparison, setComparison] = useState<ComparisonData | null>(null);
