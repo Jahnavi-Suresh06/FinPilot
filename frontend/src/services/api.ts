@@ -1,24 +1,21 @@
 import axios from "axios";
 
-// A single, shared Axios instance for the entire app.
-// Every API call in FinPilot will import THIS, instead of calling
-// axios.get/post directly — that way, base URL, headers, and
-// authentication logic only need to be configured in ONE place.
+// Shared Axios instance for the entire app
 const api = axios.create({
-    baseURL: "https://zoological-manifestation-production-b4f0.up.railway.app/api", headers: {
+    baseURL: "https://finpilot-production-71e1.up.railway.app/api",
+    headers: {
         "Content-Type": "application/json",
     },
 });
 
-// Request interceptor: runs before EVERY request sent through 'api'.
-// This is where we'll automatically attach the JWT token (once we build
-// login in Phase 6) so we don't have to manually add it to every single
-// API call throughout the app.
+// Automatically attach JWT token
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("finpilot_token");
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
 });
 
