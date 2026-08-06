@@ -1,4 +1,5 @@
 import {
+    ResponsiveContainer,
     LineChart,
     Line,
     XAxis,
@@ -6,52 +7,33 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
-    ResponsiveContainer,
 } from "recharts";
-import type { CategoryTrendSeries } from "../../types/analyticsExtras";
+
+import type { MonthlyTrendItem } from "../../types/analytics";
 import { formatCurrency } from "../../utils/formatters";
 import EmptyState from "../states/EmptyState";
 import { TrendingUp } from "lucide-react";
 
-interface CategoryTrendChartProps {
-    series: CategoryTrendSeries[];
+interface MonthlyTrendChartProps {
+    data: MonthlyTrendItem[];
 }
 
-export default function CategoryTrendChart({
-    series,
-}: CategoryTrendChartProps) {
-    if (series.length === 0) {
+export default function MonthlyTrendChart({
+    data,
+}: MonthlyTrendChartProps) {
+    if (data.length === 0) {
         return (
             <EmptyState
                 icon={TrendingUp}
-                title="No spending data for this range"
-                description="Try selecting a different date range, or add some expenses first."
+                title="No monthly trend available"
+                description="Add some transactions to view your income and expense trends."
             />
         );
     }
 
-    const periodMap = new Map<string, Record<string, string | number>>();
-
-    series.forEach((s) => {
-        s.points.forEach((point) => {
-            if (!periodMap.has(point.period)) {
-                periodMap.set(point.period, {
-                    period: point.period,
-                    label: point.label,
-                });
-            }
-
-            periodMap.get(point.period)![s.category_name] = Number(point.total);
-        });
-    });
-
-    const chartData = Array.from(periodMap.values()).sort((a, b) =>
-        String(a.period).localeCompare(String(b.period))
-    );
-
     return (
         <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={chartData}>
+            <LineChart data={data}>
                 <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
@@ -69,11 +51,15 @@ export default function CategoryTrendChart({
                     tick={{ fontSize: 12, fill: "#6b7280" }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(value) => `₹${(Number(value) / 1000).toFixed(0)}k`}
+                    tickFormatter={(value) =>
+                        `₹${(Number(value) / 1000).toFixed(0)}k`
+                    }
                 />
 
                 <Tooltip
-                    formatter={(value) => formatCurrency(Number(value ?? 0))}
+                    formatter={(value) =>
+                        formatCurrency(Number(value ?? 0))
+                    }
                 />
 
                 <Legend
@@ -81,17 +67,23 @@ export default function CategoryTrendChart({
                     wrapperStyle={{ fontSize: 12 }}
                 />
 
-                {series.map((s) => (
-                    <Line
-                        key={s.category_id}
-                        type="monotone"
-                        dataKey={s.category_name}
-                        stroke={s.color}
-                        strokeWidth={2}
-                        dot={{ r: 3 }}
-                        connectNulls
-                    />
-                ))}
+                <Line
+                    type="monotone"
+                    dataKey="income"
+                    name="Income"
+                    stroke="#16a34a"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                />
+
+                <Line
+                    type="monotone"
+                    dataKey="expense"
+                    name="Expense"
+                    stroke="#dc2626"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                />
             </LineChart>
         </ResponsiveContainer>
     );
