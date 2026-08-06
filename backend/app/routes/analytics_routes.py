@@ -84,8 +84,8 @@ def _get_monthly_trend(user_id, months=6):
 
     results = (
         db.session.query(
-            func.strftime("%Y", Transaction.date).label("year"),
-            func.strftime("%m", Transaction.date).label("month"),
+            func.extract("year", Transaction.date).label("year"),
+            func.extract("month", Transaction.date).label("month"),
             Transaction.type,
             func.sum(Transaction.amount),
         )
@@ -95,8 +95,8 @@ def _get_monthly_trend(user_id, months=6):
     )
 
     lookup = {}
-    for year_str, month_str, tx_type, total in results:
-        key = f"{year_str}-{month_str}"
+    for year_val, month_val, tx_type, total in results:
+        key = f"{int(year_val)}-{int(month_val):02d}"
         lookup.setdefault(key, {"income": 0, "expense": 0})
         lookup[key][tx_type] = total or 0
 
@@ -244,7 +244,8 @@ def get_trends():
             Category.id,
             Category.name,
             Category.color,
-            func.strftime("%Y-%m", Transaction.date).label("period"),
+            (func.extract("year", Transaction.date) * 100 +
+             func.extract("month", Transaction.date)).label("period_num"),
             func.sum(Transaction.amount).label("total"),
         )
         .join(Transaction, Transaction.category_id == Category.id)
@@ -254,15 +255,14 @@ def get_trends():
             Transaction.date >= start_dt,
             Transaction.date <= end_dt,
         )
-        .group_by(Category.id, Category.name, Category.color, "period")
-        .order_by("period")
-        .all()
+        .group_by(Category.id, Category.name, Category.color, "period_num")
+        .order_by("period_num")
     )
 
     series_map = {}
     grand_total = 0
 
-    for cat_id, cat_name, color, period, total in rows:
+    for cat_id, cat_name, color, period_num, total in rows:
         total = total or 0
         grand_total += float(total)
 
@@ -275,8 +275,10 @@ def get_trends():
                 "_total": 0,
             }
 
-        year_str, month_str = period.split("-")
-        label = f"{month_abbr[int(month_str)]} {year_str}"
+        period_num = int(period_num)
+        year_val, month_val = divmod(period_num, 100)
+        period = f"{year_val}-{month_val:02d}"
+        label = f"{month_abbr[month_val]} {year_val}"
 
         series_map[cat_id]["points"].append(
             {"period": period, "label": label, "total": total})
