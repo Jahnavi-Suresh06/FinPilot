@@ -5,8 +5,7 @@ import axios from "axios";
 // axios.get/post directly — that way, base URL, headers, and
 // authentication logic only need to be configured in ONE place.
 const api = axios.create({
-    baseURL: "http://127.0.0.1:5000/api",
-    headers: {
+    baseURL: "https://zoological-manifestation-production-b4f0.up.railway.app/api", headers: {
         "Content-Type": "application/json",
     },
 });
