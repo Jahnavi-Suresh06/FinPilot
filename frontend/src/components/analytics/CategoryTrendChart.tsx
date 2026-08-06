@@ -50,8 +50,11 @@ export default function CategoryTrendChart({ series }: CategoryTrendChartProps) 
                     tickLine={false}
                     tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
                 />
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Tooltip
+                    formatter={(value) =>
+                        formatCurrency(Number(value ?? 0))
+                    }
+                />                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                 {series.map((s) => (
                     <Line
                         key={s.category_id}
