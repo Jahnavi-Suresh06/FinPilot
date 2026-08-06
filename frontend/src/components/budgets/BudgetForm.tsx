@@ -19,8 +19,18 @@ interface BudgetFormProps {
 }
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 export default function BudgetForm({
@@ -36,31 +46,37 @@ export default function BudgetForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<BudgetFormValues>({
-    resolver: zodResolver(budgetSchema),
+    resolver: zodResolver(budgetSchema) as any,
     defaultValues: initialValues
       ? {
-          category_id: initialValues.category_id,
-          limit_amount: Number(initialValues.limit_amount),
-          month: initialValues.month,
-          year: initialValues.year,
-        }
+        category_id: initialValues.category_id,
+        limit_amount: Number(initialValues.limit_amount),
+        month: initialValues.month,
+        year: initialValues.year,
+      }
       : {
-          category_id: 0,
-          limit_amount: 0,
-          month: currentMonth,
-          year: currentYear,
-        },
+        category_id: 0,
+        limit_amount: 0,
+        month: currentMonth,
+        year: currentYear,
+      },
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit as any)}
+      className="space-y-4"
+    >
       <FormSelect
         id="category_id"
         label="Category"
         error={errors.category_id?.message}
         options={[
           { label: "Select an expense category", value: "0" },
-          ...categories.map((c) => ({ label: c.name, value: String(c.id) })),
+          ...categories.map((c) => ({
+            label: c.name,
+            value: String(c.id),
+          })),
         ]}
         {...register("category_id")}
       />
@@ -81,9 +97,13 @@ export default function BudgetForm({
           id="month"
           label="Month"
           error={errors.month?.message}
-          options={MONTH_NAMES.map((name, i) => ({ label: name, value: String(i + 1) }))}
+          options={MONTH_NAMES.map((name, i) => ({
+            label: name,
+            value: String(i + 1),
+          }))}
           {...register("month")}
         />
+
         <FormInput
           id="year"
           label="Year"
@@ -101,12 +121,15 @@ export default function BudgetForm({
         >
           Cancel
         </button>
+
         <button
           type="submit"
           disabled={isSubmitting}
           className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {isSubmitting && (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          )}
           {initialValues ? "Save changes" : "Create budget"}
         </button>
       </div>
