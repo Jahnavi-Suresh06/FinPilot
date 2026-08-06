@@ -1,32 +1,57 @@
 import {
-    BarChart,
-    Bar,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
-    Tooltip,
-    ResponsiveContainer,
     CartesianGrid,
+    Tooltip,
     Legend,
+    ResponsiveContainer,
 } from "recharts";
-import type { MonthlyTrendItem } from "../../types/analytics";
+import type { CategoryTrendSeries } from "../../types/analyticsExtras";
 import { formatCurrency } from "../../utils/formatters";
+import EmptyState from "../states/EmptyState";
+import { TrendingUp } from "lucide-react";
 
-interface MonthlyTrendChartProps {
-    data: MonthlyTrendItem[];
+interface CategoryTrendChartProps {
+    series: CategoryTrendSeries[];
 }
 
-export default function MonthlyTrendChart({
-    data,
-}: MonthlyTrendChartProps) {
-    const chartData = data.map((item) => ({
-        label: item.label,
-        Income: Number(item.income),
-        Expense: Number(item.expense),
-    }));
+export default function CategoryTrendChart({
+    series,
+}: CategoryTrendChartProps) {
+    if (series.length === 0) {
+        return (
+            <EmptyState
+                icon={TrendingUp}
+                title="No spending data for this range"
+                description="Try selecting a different date range, or add some expenses first."
+            />
+        );
+    }
+
+    const periodMap = new Map<string, Record<string, string | number>>();
+
+    series.forEach((s) => {
+        s.points.forEach((point) => {
+            if (!periodMap.has(point.period)) {
+                periodMap.set(point.period, {
+                    period: point.period,
+                    label: point.label,
+                });
+            }
+
+            periodMap.get(point.period)![s.category_name] = Number(point.total);
+        });
+    });
+
+    const chartData = Array.from(periodMap.values()).sort((a, b) =>
+        String(a.period).localeCompare(String(b.period))
+    );
 
     return (
-        <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chartData} barGap={4}>
+        <ResponsiveContainer width="100%" height={320}>
+            <LineChart data={chartData}>
                 <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
@@ -49,26 +74,25 @@ export default function MonthlyTrendChart({
 
                 <Tooltip
                     formatter={(value) => formatCurrency(Number(value ?? 0))}
-                    cursor={{ fill: "#f9fafb" }}
                 />
 
                 <Legend
                     iconType="circle"
-                    wrapperStyle={{ fontSize: 13 }}
+                    wrapperStyle={{ fontSize: 12 }}
                 />
 
-                <Bar
-                    dataKey="Income"
-                    fill="#10b981"
-                    radius={[4, 4, 0, 0]}
-                />
-
-                <Bar
-                    dataKey="Expense"
-                    fill="#ef4444"
-                    radius={[4, 4, 0, 0]}
-                />
-            </BarChart>
+                {series.map((s) => (
+                    <Line
+                        key={s.category_id}
+                        type="monotone"
+                        dataKey={s.category_name}
+                        stroke={s.color}
+                        strokeWidth={2}
+                        dot={{ r: 3 }}
+                        connectNulls
+                    />
+                ))}
+            </LineChart>
         </ResponsiveContainer>
     );
 }
