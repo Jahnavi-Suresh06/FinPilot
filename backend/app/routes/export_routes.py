@@ -13,7 +13,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from app.extensions import db
 from app.models.transaction import Transaction
 from app.models.category import Category
-from sqlalchemy import func
+from sqlalchemy import func, extract
 
 export_bp = Blueprint("export", __name__, url_prefix="/api/export")
 
@@ -106,8 +106,8 @@ def export_monthly_report_pdf():
     transactions = (
         Transaction.query.filter(
             Transaction.user_id == user_id,
-            func.strftime("%m", Transaction.date) == f"{month:02d}",
-            func.strftime("%Y", Transaction.date) == str(year),
+            extract("month", Transaction.date) 
+            extract("year", Transaction.date)
         )
         .order_by(Transaction.date.asc())
         .all()
