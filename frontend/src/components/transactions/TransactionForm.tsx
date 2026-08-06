@@ -30,7 +30,7 @@ export default function TransactionForm({
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<TransactionFormValues>({
-        resolver: zodResolver(transactionSchema),
+        resolver: zodResolver(transactionSchema) as any,
         defaultValues: initialValues
             ? {
                 category_id: initialValues.category_id,
@@ -49,10 +49,10 @@ export default function TransactionForm({
     });
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Hidden field: keeps 'type' in the form data without showing a
-          redundant control to the user — the page already establishes
-          whether we're adding income or an expense. */}
+        <form
+            onSubmit={handleSubmit(onSubmit as any)}
+            className="space-y-4"
+        >
             <input type="hidden" {...register("type")} value={type} />
 
             <FormSelect
@@ -61,7 +61,10 @@ export default function TransactionForm({
                 error={errors.category_id?.message}
                 options={[
                     { label: "Select a category", value: "0" },
-                    ...categories.map((c) => ({ label: c.name, value: String(c.id) })),
+                    ...categories.map((c) => ({
+                        label: c.name,
+                        value: String(c.id),
+                    })),
                 ]}
                 {...register("category_id")}
             />
@@ -102,12 +105,15 @@ export default function TransactionForm({
                 >
                     Cancel
                 </button>
+
                 <button
                     type="submit"
                     disabled={isSubmitting}
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary-600 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {isSubmitting && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
                     {initialValues ? "Save changes" : "Add transaction"}
                 </button>
             </div>
