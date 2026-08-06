@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy import func
+from sqlalchemy import func, extract
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
@@ -28,8 +28,8 @@ def _attach_progress(budget):
             Transaction.user_id == budget.user_id,
             Transaction.category_id == budget.category_id,
             Transaction.type == "expense",
-            func.strftime("%m", Transaction.date) == f"{budget.month:02d}",
-            func.strftime("%Y", Transaction.date) == str(budget.year),
+            extract("month", Transaction.date) == budget.month,
+            extract("year", Transaction.date) == budget.year,
         )
         .scalar()
     ) or 0
