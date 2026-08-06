@@ -106,8 +106,8 @@ def export_monthly_report_pdf():
     transactions = (
         Transaction.query.filter(
             Transaction.user_id == user_id,
-            extract("month", Transaction.date) 
-            extract("year", Transaction.date)
+            extract("month", Transaction.date) == month,
+            extract("year", Transaction.date) == year,
         )
         .order_by(Transaction.date.asc())
         .all()
