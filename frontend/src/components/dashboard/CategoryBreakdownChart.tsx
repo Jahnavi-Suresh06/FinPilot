@@ -1,4 +1,11 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+} from "recharts";
 import type { CategoryBreakdownItem } from "../../types/analytics";
 import { formatCurrency } from "../../utils/formatters";
 import EmptyState from "../states/EmptyState";
@@ -8,7 +15,9 @@ interface CategoryBreakdownChartProps {
     data: CategoryBreakdownItem[];
 }
 
-export default function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
+export default function CategoryBreakdownChart({
+    data,
+}: CategoryBreakdownChartProps) {
     if (data.length === 0) {
         return (
             <EmptyState
@@ -19,9 +28,6 @@ export default function CategoryBreakdownChart({ data }: CategoryBreakdownChartP
         );
     }
 
-    // Recharts' Pie component expects a plain numeric field to size each
-    // slice — we convert the string "total" (kept as a string for decimal
-    // precision everywhere else) into a number here, ONLY for charting.
     const chartData = data.map((item) => ({
         name: item.category_name,
         value: Number(item.total),
@@ -45,7 +51,11 @@ export default function CategoryBreakdownChart({ data }: CategoryBreakdownChartP
                         <Cell key={entry.name} fill={entry.color} />
                     ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+
+                <Tooltip
+                    formatter={(value) => formatCurrency(Number(value ?? 0))}
+                />
+
                 <Legend
                     layout="vertical"
                     align="right"
