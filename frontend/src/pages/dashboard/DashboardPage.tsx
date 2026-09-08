@@ -55,10 +55,11 @@ export default function DashboardPage() {
     }, [loadSummary]);
 
     async function handleExportReport() {
+        if (!selectedPeriod) return;
+
         setIsExporting(true);
         try {
-            const today = new Date();
-            await exportMonthlyReportPdf(today.getMonth() + 1, today.getFullYear());
+            await exportMonthlyReportPdf(selectedPeriod.month, selectedPeriod.year);
             showToast("Monthly report downloaded successfully.");
         } catch {
             window.alert("Failed to generate report. Please try again.");
@@ -92,7 +93,8 @@ export default function DashboardPage() {
                     <button
                         type="button"
                         onClick={handleExportReport}
-                        disabled={isExporting}
+                        disabled={isExporting || !selectedPeriod}
+                        title={!selectedPeriod ? "Select a specific month to download its report" : undefined}
                         className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {isExporting ? (
