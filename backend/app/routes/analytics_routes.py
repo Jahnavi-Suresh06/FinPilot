@@ -18,18 +18,25 @@ from app.schemas.transaction_schema import transactions_schema
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/api/analytics")
 
 
-def _get_totals(user_id):
+def _get_totals(user_id, start=None, end=None):
     """
     Uses SQL SUM(), grouped by type, to compute total income and total
     expenses in a single database query — instead of pulling every
     transaction into Python and summing manually.
+
+    If start/end are provided, totals are scoped to that date range
+    (inclusive). If omitted, totals are all-time — unchanged behavior.
     """
-    results = (
+    query = (
         db.session.query(Transaction.type, func.sum(Transaction.amount))
         .filter(Transaction.user_id == user_id)
-        .group_by(Transaction.type)
-        .all()
     )
+
+    if start is not None and end is not None:
+        query = query.filter(Transaction.date >= start,
+                             Transaction.date <= end)
+
+    results = query.group_by(Transaction.type).all()
 
     totals = {"income": 0, "expense": 0}
     for tx_type, total in results:
@@ -38,12 +45,15 @@ def _get_totals(user_id):
     return totals
 
 
-def _get_category_breakdown(user_id):
+def _get_category_breakdown(user_id, start=None, end=None):
     """
     Sums expense amounts, grouped by category, joined against the
     Category table to get each category's name/color for the pie chart.
+
+    If start/end are provided, only expenses within that date range
+    are included. If omitted, this is all-time — unchanged behavior.
     """
-    results = (
+    query = (
         db.session.query(
             Category.id,
             Category.name,
@@ -52,7 +62,14 @@ def _get_category_breakdown(user_id):
         )
         .join(Transaction, Transaction.category_id == Category.id)
         .filter(Transaction.user_id == user_id, Transaction.type == "expense")
-        .group_by(Category.id, Category.name, Category.color)
+    )
+
+    if start is not None and end is not None:
+        query = query.filter(Transaction.date >= start,
+                             Transaction.date <= end)
+
+    results = (
+        query.group_by(Category.id, Category.name, Category.color)
         .order_by(func.sum(Transaction.amount).desc())
         .all()
     )
@@ -69,6 +86,9 @@ def _get_monthly_trend(user_id, months=6):
     Builds income vs. expense totals for each of the last N months
     (including months with zero transactions, so the chart always
     shows a consistent number of bars/points, not gaps).
+
+    Unchanged: always shows the last 6 calendar months regardless of
+    any selected period, since this is a trend view, not a snapshot.
     """
     today = date.today()
 
@@ -114,27 +134,59 @@ def _get_monthly_trend(user_id, months=6):
     return trend
 
 
+def _period_bounds(month, year):
+    """Returns the first and last calendar day of a given month/year."""
+    import calendar
+    last_day = calendar.monthrange(year, month)[1]
+    return date(year, month, 1), date(year, month, last_day)
+
+
+def _previous_period(month, year):
+    """Returns the (month, year) immediately before the given one."""
+    if month == 1:
+        return 12, year - 1
+    return month - 1, year
+
+
 @analytics_bp.route("/summary", methods=["GET"])
 @jwt_required()
 def get_summary():
     """
     Returns everything the Dashboard needs in a single request:
     totals, category breakdown, monthly trend, and recent transactions.
+
+    Accepts optional ?month=&year= query params. When both are given,
+    totals/category breakdown/transaction_count are scoped to that
+    calendar month. When omitted, everything is all-time (unchanged
+    default behavior). The 6-month trend chart is always all-time
+    regardless of this parameter — it's a trend view, not a snapshot.
     """
     user_id = get_jwt_identity()
 
-    totals = _get_totals(user_id)
+    month = request.args.get("month", type=int)
+    year = request.args.get("year", type=int)
+
+    start, end = (None, None)
+    if month is not None and year is not None:
+        start, end = _period_bounds(month, year)
+
+    totals = _get_totals(user_id, start, end)
     total_income = totals["income"]
     total_expenses = totals["expense"]
 
-    transaction_count = Transaction.query.filter_by(user_id=user_id).count()
+    transaction_count_query = Transaction.query.filter_by(user_id=user_id)
+    if start is not None and end is not None:
+        transaction_count_query = transaction_count_query.filter(
+            Transaction.date >= start, Transaction.date <= end
+        )
+    transaction_count = transaction_count_query.count()
 
     summary_data = {
         "total_income": total_income,
         "total_expenses": total_expenses,
         "net_balance": total_income - total_expenses,
         "transaction_count": transaction_count,
-        "category_breakdown": _get_category_breakdown(user_id),
+        "category_breakdown": _get_category_breakdown(user_id, start, end),
         "monthly_trend": _get_monthly_trend(user_id),
     }
 
@@ -149,20 +201,6 @@ def get_summary():
         **dashboard_summary_schema.dump(summary_data),
         "recent_transactions": transactions_schema.dump(recent),
     }), 200
-
-
-def _period_bounds(month, year):
-    """Returns the first and last calendar day of a given month/year."""
-    import calendar
-    last_day = calendar.monthrange(year, month)[1]
-    return date(year, month, 1), date(year, month, last_day)
-
-
-def _previous_period(month, year):
-    """Returns the (month, year) immediately before the given one."""
-    if month == 1:
-        return 12, year - 1
-    return month - 1, year
 
 
 @analytics_bp.route("/comparison", methods=["GET"])
