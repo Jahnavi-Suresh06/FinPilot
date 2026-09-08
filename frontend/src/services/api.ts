@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Shared Axios instance for the entire app
 const api = axios.create({
-    baseURL: "https://finpilot-production-71e1.up.railway.app/api",
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {
         "Content-Type": "application/json",
     },
