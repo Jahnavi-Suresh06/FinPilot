@@ -4,8 +4,10 @@ import type { ComparisonData, AnalyticsTrends } from "../types/analyticsExtras";
 import type { ExpensePrediction } from "../types/prediction";
 import type { InsightsResponse } from "../types/insight";
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-    const response = await api.get<DashboardSummary>("/analytics/summary");
+export async function getDashboardSummary(month?: number, year?: number): Promise<DashboardSummary> {
+    const response = await api.get<DashboardSummary>("/analytics/summary", {
+        params: month && year ? { month, year } : undefined,
+    });
     return response.data;
 }
 

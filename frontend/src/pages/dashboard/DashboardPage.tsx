@@ -8,6 +8,7 @@ import SummaryCard from "../../components/dashboard/SummaryCard";
 import CategoryBreakdownChart from "../../components/dashboard/CategoryBreakdownChart";
 import MonthlyTrendChart from "../../components/dashboard/MonthlyTrendChart";
 import RecentTransactions from "../../components/dashboard/RecentTransactions";
+import MonthYearSelector, { type SelectedPeriod } from "../../components/dashboard/MonthYearSelector";
 import PredictionCard from "../../components/ai/PredictionCard";
 import { formatCurrency } from "../../utils/formatters";
 import { getDashboardSummary, getExpensePrediction } from "../../services/analyticsService";
@@ -15,6 +16,11 @@ import { exportMonthlyReportPdf } from "../../services/exportService";
 import { useToast } from "../../context/ToastContext";
 import type { DashboardSummary } from "../../types/analytics";
 import type { ExpensePrediction } from "../../types/prediction";
+
+const MONTH_LABELS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+];
 
 export default function DashboardPage() {
     usePageTitle("Dashboard");
@@ -25,13 +31,14 @@ export default function DashboardPage() {
     const [prediction, setPrediction] = useState<ExpensePrediction | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedPeriod, setSelectedPeriod] = useState<SelectedPeriod | null>(null);
 
     const loadSummary = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
             const [summaryData, predictionData] = await Promise.all([
-                getDashboardSummary(),
+                getDashboardSummary(selectedPeriod?.month, selectedPeriod?.year),
                 getExpensePrediction(),
             ]);
             setSummary(summaryData);
@@ -41,7 +48,7 @@ export default function DashboardPage() {
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [selectedPeriod]);
 
     useEffect(() => {
         loadSummary();
@@ -69,6 +76,9 @@ export default function DashboardPage() {
     }
 
     const netIsPositive = Number(summary.net_balance) >= 0;
+    const categoryBreakdownSubtitle = selectedPeriod
+        ? `${MONTH_LABELS[selectedPeriod.month - 1]} ${selectedPeriod.year} expenses`
+        : "All-time expenses";
 
     return (
         <div>
@@ -77,19 +87,22 @@ export default function DashboardPage() {
                     <h2 className="text-2xl font-bold text-neutral-900">Dashboard</h2>
                     <p className="mt-1 text-sm text-neutral-500">Your complete financial overview.</p>
                 </div>
-                <button
-                    type="button"
-                    onClick={handleExportReport}
-                    disabled={isExporting}
-                    className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {isExporting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <FileDown className="h-4 w-4" />
-                    )}
-                    Download Monthly Report
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <MonthYearSelector value={selectedPeriod} onChange={setSelectedPeriod} />
+                    <button
+                        type="button"
+                        onClick={handleExportReport}
+                        disabled={isExporting}
+                        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {isExporting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <FileDown className="h-4 w-4" />
+                        )}
+                        Download Monthly Report
+                    </button>
+                </div>
             </div>
 
             {/* Summary cards */}
@@ -126,7 +139,7 @@ export default function DashboardPage() {
 
                 <div className="rounded-2xl border border-neutral-200 bg-white p-5 lg:col-span-2">
                     <h3 className="text-sm font-semibold text-neutral-900">Spending by Category</h3>
-                    <p className="text-xs text-neutral-500">All-time expenses</p>
+                    <p className="text-xs text-neutral-500">{categoryBreakdownSubtitle}</p>
                     <div className="mt-4">
                         <CategoryBreakdownChart data={summary.category_breakdown} />
                     </div>
